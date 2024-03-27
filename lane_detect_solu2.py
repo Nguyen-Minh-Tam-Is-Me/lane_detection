@@ -69,7 +69,7 @@ def draw_lines(img, lines, color=[255, 0, 0], thickness=10):
     """
     rows, cols = img.shape[:2]
     y2 = int(rows * 0.6)
-    cv2.line(img, (cols // 2, y2), (cols // 2, rows), [255, 255, 0], 5)
+    cv2.line(img, (cols // 2, y2), (cols // 2, rows), [255, 255, 0], 3, cv2.LINE_AA)
     for line in lines:
         for x1,y1,x2,y2 in line:
             cv2.line(img, (x1, y1), (x2, y2), color, thickness)
@@ -143,7 +143,9 @@ def slope_lines(image,lines):
     center_x_bott = midpoint_x + offset_bott
     center_x_top = midpoint_x + offset_top
 
-    offset=(offset_bott+offset_top)//2
+    #offset=(offset_bott+offset_top)//2
+    offset=int((offset_bott/(midpoint_bott-left_x_bott))*100)
+
     midpoint=(midpoint_bott+midpoint_top)//2
 
     
@@ -164,7 +166,7 @@ def hough_lines(img, rho, theta, threshold, min_line_len, max_line_gap):
     #draw_lines(line_img, lines)
     line_img,offset,midpoint = slope_lines(line_img,lines)
    
-    cv2.putText(line_img, f'Offset: {offset} pixels', (midpoint, int(img.shape[0] * 0.5)), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255), 2)
+    cv2.putText(line_img, f'Offset: {offset} %', (midpoint, int(img.shape[0] * 0.5)), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255), 2)
     return line_img
 
 # Python 3 has support for cool math symbols.
