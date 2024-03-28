@@ -4,7 +4,7 @@ import cv2
 
 # Import everything needed to edit/save/watch video clips
 from moviepy import editor
-import moviepy
+
 
 
 def region_selection(image):
@@ -197,4 +197,4 @@ def process_video(test_video, output_video):
 
 
 # calling driver function
-process_video('test.mp4', 'output.mp4')
+process_video('test3.mp4', 'output.mp4')
