@@ -137,6 +137,8 @@ def draw_lane_lines(image, lines, color=[255, 0, 0], thickness=12):
             color (Default = red): Line color.
             thickness (Default = 12): Line thickness.
     """
+    poly_vertices = []
+    order = [0,1,3,2]
     line_image = np.zeros_like(image)
     rows, cols = line_image.shape[:2]
     y1 = rows
@@ -147,11 +149,19 @@ def draw_lane_lines(image, lines, color=[255, 0, 0], thickness=12):
         left_x2, left_y2 = left_line[1]
         right_x1, right_y1 = right_line[0]
         right_x2, right_y2 = right_line[1]
-        offset_bott=int(((left_x1+right_x1)//2-(cols // 2))/((left_x1+right_x1)//2-left_x1)*100)
-        offset_top=((left_x2+right_x2)//2-(cols // 2))
-        
+
+        poly_vertices.append((left_x1, left_y1))
+        poly_vertices.append((left_x2, left_y2))
+        poly_vertices.append((right_x1, right_y1))
+        poly_vertices.append((right_x2, right_y2))
+        if ((left_x1+right_x1)//2-left_x1)!=0 and ((left_x2+right_x2)//2-left_x2) !=0:
+            offset_bott=int(((left_x1+right_x1)//2-(cols // 2))/((left_x1+right_x1)//2-left_x1)*100)
+            offset_top=int(((left_x2+right_x2)//2-(cols // 2))/((left_x2+right_x2)//2-left_x2)*100)
+            cv2.putText(line_image, f'Offset: {offset_bott} %', (int(line_image.shape[1] * 0.5), int(line_image.shape[0] * 0.5)), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255), 2)
+
+        poly_vertices = [poly_vertices[i] for i in order]
+        cv2.fillPoly(line_image, pts = [np.array(poly_vertices, 'int32')], color = (0, 0, 255))
         cv2.line(line_image, ((left_x1+right_x1)//2, y1), ((left_x2+right_x2)//2, y2), [0, 255, 0], 5)
-        cv2.putText(line_image, f'Offset: {offset_bott} %', (int(line_image.shape[1] * 0.5), int(line_image.shape[0] * 0.5)), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255), 2)
 
     cv2.line(line_image, (cols // 2, y2), (cols // 2, rows), [255, 255, 0], 3,)
     for line in lines:
@@ -213,4 +223,4 @@ def process_video(test_video, output_video):
 
 
 # calling driver function
-process_video('2024-03-28 13-31-43.mp4', 'output.mp4')
+process_video('solidYellowLeft.mp4', 'output.mp4')
