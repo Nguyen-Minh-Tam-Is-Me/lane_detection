@@ -69,7 +69,7 @@ def draw_lines(img, lines, color=[255, 0, 0], thickness=10):
     """
     rows, cols = img.shape[:2]
     y2 = int(rows * 0.6)
-    cv2.line(img, (cols // 2, y2), (cols // 2, rows), [255, 255, 0], 3, cv2.LINE_AA)
+    #cv2.line(img, (cols // 2, y2), (cols // 2, rows), [255, 255, 0], 3, cv2.LINE_AA)
     for line in lines:
         for x1,y1,x2,y2 in line:
             cv2.line(img, (x1, y1), (x2, y2), color, thickness)
@@ -118,7 +118,7 @@ def slope_lines(image,lines):
         draw_lines(img, np.array([[[x1,y1,x2,y2]]]))
     
     poly_vertices = [poly_vertices[i] for i in order]
-    #cv2.fillPoly(img, pts = np.array([poly_vertices],'int32'), color = (0,255,0))
+    cv2.fillPoly(img, pts = np.array([poly_vertices],'int32'), color = (0,0,255))
     rows, cols = image.shape[:2]
     y1 = rows
     y2 = int(rows * 0.6)
@@ -148,7 +148,7 @@ def slope_lines(image,lines):
 
     midpoint=(midpoint_bott+midpoint_top)//2
 
-    
+    cv2.line(img, (cols // 2, y2), (cols // 2, rows), [255, 255, 0], 3)
     cv2.line(img, (center_x_bott, y1), (center_x_top, y2), [0, 255, 0], 5)
     return cv2.addWeighted(image,0.7,img,0.4,0.),offset,midpoint
     
@@ -161,7 +161,7 @@ def hough_lines(img, rho, theta, threshold, min_line_len, max_line_gap):
         
     Returns an image with hough lines drawn.
     """
-    lines = cv2.HoughLinesP(img, rho, theta, threshold, np.array([]), minLineLength=min_line_len, maxLineGap=max_line_gap)
+    lines = cv2.HoughLinesP(img, rho, theta, threshold,  minLineLength=min_line_len, maxLineGap=max_line_gap)
     line_img = np.zeros((img.shape[0], img.shape[1], 3), dtype=np.uint8)
     #draw_lines(line_img, lines)
     line_img,offset,midpoint = slope_lines(line_img,lines)
@@ -171,7 +171,7 @@ def hough_lines(img, rho, theta, threshold, min_line_len, max_line_gap):
 
 # Python 3 has support for cool math symbols.
 
-def weighted_img(img, initial_img, α=0.1, β=1., γ=0.):
+def weighted_img(img, initial_img, α=1., β=1., γ=0.):
     """
     `img` is the output of the hough_lines(), An image with lines drawn on it.
     Should be a blank image (all black) with lines drawn on it.
@@ -188,10 +188,10 @@ def weighted_img(img, initial_img, α=0.1, β=1., γ=0.):
     return lines_edges
 def get_vertices(image):
     rows, cols = image.shape[:2]
-    bottom_left  = [cols*0.15, rows]
-    top_left     = [cols*0.45, rows*0.6]
-    bottom_right = [cols*0.95, rows]
-    top_right    = [cols*0.55, rows*0.6] 
+    bottom_left  = [cols*0.1, rows]
+    top_left     = [cols*0.4, rows*0.6]
+    bottom_right = [cols*0.9, rows]
+    top_right    = [cols*0.56, rows*0.6] 
     
     ver = np.array([[bottom_left, top_left, top_right, bottom_right]], dtype=np.int32)
     return ver
@@ -204,16 +204,16 @@ def lane_finding_pipeline(image):
     #Gaussian Smoothing
     smoothed_img = gaussian_blur(img = gray_img, kernel_size = 5)
     #Canny Edge Detection
-    canny_img = canny(img = smoothed_img, low_threshold = 180, high_threshold = 240)
+    canny_img = canny(img = smoothed_img, low_threshold = 50, high_threshold = 150)
     #Masked Image Within a Polygon
     masked_img = region_of_interest(img = canny_img, vertices = get_vertices(image))
     #Hough Transform Lines
-    houghed_lines = hough_lines(img = masked_img, rho = 1, theta = np.pi/180, threshold = 20, min_line_len = 20, max_line_gap = 180)
+    houghed_lines = hough_lines(img = masked_img, rho = 1, theta = np.pi/180, threshold = 20, min_line_len = 20, max_line_gap = 500)
     #Draw lines on edges
-    output = weighted_img(img = houghed_lines, initial_img = image, α=0.8, β=1., γ=0.)
+    output = weighted_img(img = houghed_lines, initial_img = image, α=1., β=1., γ=0.)
     
     return output
-white_output = 'output3.mp4'
+white_output = 'output.mp4'
 ## To speed up the testing process you may want to try your pipeline on a shorter subclip of the video
 ## To do so add .subclip(start_second,end_second) to the end of the line below
 ## Where start_second and end_second are integer values representing the start and end of the subclip
