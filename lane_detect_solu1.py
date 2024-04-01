@@ -67,11 +67,14 @@ def average_slope_intercept(lines):
     Parameters:
         lines: output from Hough Transform
     """
+    if lines is None:
+        return None,None
     left_lines = []  # (slope, intercept)
     left_weights = []  # (length,)
     right_lines = []  # (slope, intercept)
     right_weights = []  # (length,)
-
+    if lines is None:
+        return None,None 
     for line in lines:
         for x1, y1, x2, y2 in line:
             if x1 == x2:
@@ -106,6 +109,8 @@ def pixel_points(y1, y2, line):
     if line is None:
         return None
     slope, intercept = line
+    if slope ==0:
+        return None
     x1 = int((y1 - intercept) / slope)
     x2 = int((y2 - intercept) / slope)
     y1 = int(y1)
@@ -157,13 +162,19 @@ def draw_lane_lines(image, lines, color=[255, 0, 0], thickness=12):
         if ((left_x1+right_x1)//2-left_x1)!=0 and ((left_x2+right_x2)//2-left_x2) !=0:
             offset_bott=int(((left_x1+right_x1)//2-(cols // 2))/((left_x1+right_x1)//2-left_x1)*100)
             offset_top=int(((left_x2+right_x2)//2-(cols // 2))/((left_x2+right_x2)//2-left_x2)*100)
-            cv2.putText(line_image, f'Offset: {offset_bott} %', (int(line_image.shape[1] * 0.5), int(line_image.shape[0] * 0.5)), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255), 2)
+            offset=(left_x2+right_x2)//2-cols // 2
+            #cv2.putText(line_image, f'Offset: {offset_bott} %', (int(line_image.shape[1] * 0.5), int(line_image.shape[0] * 0.5)), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255), 2)
 
         poly_vertices = [poly_vertices[i] for i in order]
         cv2.fillPoly(line_image, pts = [np.array(poly_vertices, 'int32')], color = (0, 0, 255))
-        cv2.line(line_image, ((left_x1+right_x1)//2, y1), ((left_x2+right_x2)//2, y2), [0, 255, 0], 5)
+        cv2.line(line_image, (cols // 2, y1), ((left_x2+right_x2)//2, y2), [0, 255, 0], 5)
+        tan_angle=((left_x2+right_x2)//2-cols // 2)/(y1*0.4)
+        angle_rad = np.arctan(tan_angle)
+        # Convert the angle from radians to degrees
+        angle_deg = np.degrees(angle_rad)
+        cv2.putText(line_image, f'Angle: {round(angle_deg, 2)} degree', (int(line_image.shape[1] * 0.5), int(line_image.shape[0] * 0.5)), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255), 2)
 
-    cv2.line(line_image, (cols // 2, y2), (cols // 2, rows), [255, 255, 0], 3,)
+    #cv2.line(line_image, (cols // 2, y2), (cols // 2, rows), [255, 255, 0], 3,)
     for line in lines:
         if line is not None:
             cv2.line(line_image, *line, color, thickness)
