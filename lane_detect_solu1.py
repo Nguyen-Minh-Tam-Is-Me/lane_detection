@@ -159,10 +159,10 @@ def draw_lane_lines(image, lines, color=[255, 0, 0], thickness=12):
         poly_vertices.append((left_x2, left_y2))
         poly_vertices.append((right_x1, right_y1))
         poly_vertices.append((right_x2, right_y2))
-        if ((left_x1+right_x1)//2-left_x1)!=0 and ((left_x2+right_x2)//2-left_x2) !=0:
-            offset_bott=int(((left_x1+right_x1)//2-(cols // 2))/((left_x1+right_x1)//2-left_x1)*100)
-            offset_top=int(((left_x2+right_x2)//2-(cols // 2))/((left_x2+right_x2)//2-left_x2)*100)
-            offset=(left_x2+right_x2)//2-cols // 2
+        # if ((left_x1+right_x1)//2-left_x1)!=0 and ((left_x2+right_x2)//2-left_x2) !=0:
+        #     offset_bott=int(((left_x1+right_x1)//2-(cols // 2))/((left_x1+right_x1)//2-left_x1)*100)
+        #     offset_top=int(((left_x2+right_x2)//2-(cols // 2))/((left_x2+right_x2)//2-left_x2)*100)
+        #     offset=(left_x2+right_x2)//2-cols // 2
             #cv2.putText(line_image, f'Offset: {offset_bott} %', (int(line_image.shape[1] * 0.5), int(line_image.shape[0] * 0.5)), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255), 2)
 
         poly_vertices = [poly_vertices[i] for i in order]
@@ -173,7 +173,32 @@ def draw_lane_lines(image, lines, color=[255, 0, 0], thickness=12):
         # Convert the angle from radians to degrees
         angle_deg = np.degrees(angle_rad)
         cv2.putText(line_image, f'Angle: {round(angle_deg, 2)} degree', (int(line_image.shape[1] * 0.5), int(line_image.shape[0] * 0.5)), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255), 2)
+    
+    elif left_line is not None or right_line is not None:
+        if left_line is not None:
+            left_x1, left_y1 = left_line[0]
+            left_x2, left_y2 = left_line[1]
+            poly_vertices.append((left_x1, left_y1))
+            poly_vertices.append((left_x2, left_y2))
+            poly_vertices.append((cols-left_x1, y1))
+            poly_vertices.append((cols-left_x2, y2))
 
+            poly_vertices = [poly_vertices[i] for i in order]
+            cv2.fillPoly(line_image, pts = [np.array(poly_vertices, 'int32')], color = (0, 0, 255))
+            cv2.line(line_image, (cols // 2, y1), (cols//2, y2), [0, 255, 0], 5)
+        elif right_line is not None:
+            right_x1, right_y1 = right_line[0]
+            right_x2, right_y2 = right_line[1]
+
+            poly_vertices.append((cols-right_x1, y1))
+            poly_vertices.append((cols-right_x2, y2))
+            poly_vertices.append((right_x1, right_y1))
+            poly_vertices.append((right_x2, right_y2))
+
+            poly_vertices = [poly_vertices[i] for i in order]
+            cv2.fillPoly(line_image, pts = [np.array(poly_vertices, 'int32')], color = (0, 0, 255))
+            cv2.line(line_image, (cols // 2, y1), (cols//2, y2), [0, 255, 0], 5)
+ 
     #cv2.line(line_image, (cols // 2, y2), (cols // 2, rows), [255, 255, 0], 3,)
     for line in lines:
         if line is not None:
@@ -234,4 +259,4 @@ def process_video(test_video, output_video):
 
 
 # calling driver function
-process_video('solidYellowLeft.mp4', 'output.mp4')
+process_video('input.mp4', 'output.mp4')
